@@ -145,7 +145,7 @@ if __name__ == "__main__":
 		print('\n', shift_bit(c, 2))
 
 	# test sbox substitution
-	if True:
+	if False:
 		d = np.array([[0,1,1,0,0,0,0,1], [0,1,1,0,0,1,0,1]])
 		e = d[0]
 		print(substitute(e))
