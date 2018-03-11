@@ -54,8 +54,8 @@ sbox = {
 
 # input is np array with shape(8,)
 def substitute(message):
-	row = hex(int(''.join(str(x) for x in message[:4]), 2))[2:]
-	col = hex(int(''.join(str(x) for x in message[4:]), 2))[2:]
+	row = hex(int(''.join(str(x) for x in message[:4]), 2))[2:].upper()
+	col = hex(int(''.join(str(x) for x in message[4:]), 2))[2:].upper()
 
 	res = bin(int(sbox[row + col], 16))[2:].zfill(8)
 	return np.array([int(x) for x in res])
@@ -145,7 +145,7 @@ if __name__ == "__main__":
 		print('\n', shift_bit(c, 2))
 
 	# test sbox substitution
-	if False:
+	if True:
 		d = np.array([[0,1,1,0,0,0,0,1], [0,1,1,0,0,1,0,1]])
 		e = d[0]
 		print(substitute(e))
