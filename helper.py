@@ -1,3 +1,4 @@
+# Input for shuffle method must be a numpy array
 def shuffle(message, odd=True):
 	result = np.zeros((8,8))
 	if odd == True:
@@ -51,6 +52,17 @@ def shuffle(message, odd=True):
 
 	return result
 
+# input for the shift_bit must be a list
+def shift_bit(s, n, direction=1):
+	# direction 1 -> right, 0 -> left
+	if(direction == 0):
+		shifted_part = s[:4*(n-1)]
+		main_part = s[4*(n-1):]
+		return main_part + shifted_part
+	else:
+		shifted_part = s[-(4*(n-1)):]
+		main_part = s[:-(4*(n-1))]
+		return shifted_part + main_part
 
 if __name__ == "__main__":
 	import numpy as np
@@ -59,3 +71,9 @@ if __name__ == "__main__":
 	print(a)
 	b = shuffle(a, False)
 	print('\n', b)
+
+
+	c = [i for i in range(64)]
+	print('\n', c)
+	print('\n', shift_bit(c, 2, direction=0))
+	print('\n', shift_bit(c, 2, direction=1))
