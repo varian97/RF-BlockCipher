@@ -57,10 +57,18 @@ class RF1(object):
 			self.plaintext.append(''.join(format(ord(x), '08b') for x in temp[i:i+16]))
 		self.key = ''.join(format(ord(x), '08b') for x in key_temp)
 
-	def encrypt(self, nround=16):
+	# ecb is the default for the encryption
+	def encrypt(self, nround=16, mode='ecb'):
+		if(mode == 'cbc'):
+			previous_encrypted_message = ""
+
 		ciphertext = ""
 
 		for message in self.plaintext:
+			if(mode == 'cbc'):
+				if len(previous_encrypted_message) > 0:
+					message = ''.join(str(int(i) ^ int(j)) for i, j in zip(message, previous_encrypted_message))
+
 			# generate message matrix
 			message_L = np.array([int(x) for x in message[:64]]).reshape((8,8))
 			message_R = np.array([int(x) for x in message[64:]]).reshape((8,8))
@@ -76,12 +84,21 @@ class RF1(object):
 			# combine the message again
 			combined = np.append(message_L.reshape((64,)), message_R.reshape((64,)))
 			combined = ''.join(str(x) for x in combined)
+
+			# if the mode is cbc, store the current result for the next message
+			if(mode == 'cbc'):
+				previous_encrypted_message = combined
+
 			for i in range(0,len(combined),8):
 				ciphertext += chr(int(combined[i:i+8], 2))
 
 		return ciphertext
 
-	def decrypt(self, ciphertext, nround=16):
+	# ecb is the default for decryption
+	def decrypt(self, ciphertext, nround=16, mode='ecb'):
+		if(mode == 'cbc'):
+			previous_encrypted_message = []
+
 		plaintext = ""
 
 		# convert ciphertext to binary form
@@ -89,7 +106,11 @@ class RF1(object):
 		for i in range(0, len(ciphertext), 16):
 			temp_cipher.append(''.join(format(ord(x), '08b') for x in ciphertext[i:i+16]))
 
-		for message in temp_cipher:
+		for index, message in enumerate(temp_cipher):
+			# if mode is cbc, we must store the current ciphertext for decoding the next block of message
+			if(mode == 'cbc'):
+				previous_encrypted_message.append(message)
+
 			# generate message matrix
 			message_L = np.array([int(x) for x in message[:64]]).reshape((8,8))
 			message_R = np.array([int(x) for x in message[64:]]).reshape((8,8))
@@ -105,6 +126,12 @@ class RF1(object):
 			# combine the message again
 			combined = np.append(message_L.reshape((64,)), message_R.reshape((64,)))
 			combined = ''.join(str(x) for x in combined)
+
+			# if the mode is cbc, we must convert the plaintext to the actual plaintext
+			if(mode == 'cbc'):
+				if index > 0:
+					combined = ''.join(str(int(i) ^ int(j)) for i,j in zip(combined, previous_encrypted_message[-2]))
+
 			for i in range(0,len(combined),8):
 				plaintext += chr(int(combined[i:i+8], 2))
 
@@ -113,7 +140,7 @@ class RF1(object):
 
 if __name__ == "__main__":
 	cipher = RF1("key.txt", "input.txt")
-	encrypted = cipher.encrypt()
+	encrypted = cipher.encrypt(mode='cbc')
 	print(encrypted)
-	decrypted = cipher.decrypt(encrypted)
+	decrypted = cipher.decrypt(encrypted, mode='cbc')
 	print(decrypted)
