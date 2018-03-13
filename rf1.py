@@ -12,10 +12,10 @@ def round_function(message_L, message_R, internal_key, iteration):
 	else:
 		transposed = helper.shuffle(message_R)
 
-	xored = transposed.astype(int) ^ internal_key.astype(int)
-	substituted = xored[:,:]
-	for i in range(len(xored)):
-		substituted[i] = helper.substitute(xored[i])
+	dotted = np.remainder(np.dot(transposed, internal_key), 2).astype(int)
+	substituted = dotted[:,:]
+	for i in range(len(dotted)):
+		substituted[i] = helper.substitute(dotted[i])
 
 	new_R = substituted ^ message_L
 	return new_L, new_R
@@ -29,10 +29,10 @@ def round_function_inverse(message_L, message_R, internal_key, iteration):
 	else:
 		transposed = helper.shuffle(message_L)
 
-	xored = transposed.astype(int) ^ internal_key.astype(int)
-	substituted = xored[:,:]
-	for i in range(len(xored)):
-		substituted[i] = helper.substitute(xored[i])
+	dotted = np.remainder(np.dot(transposed, internal_key), 2).astype(int)
+	substituted = dotted[:,:]
+	for i in range(len(dotted)):
+		substituted[i] = helper.substitute(dotted[i])
 
 	new_L = substituted ^ message_R
 	return new_L, new_R
