@@ -143,7 +143,12 @@ class RF1(object):
 		return plaintext		
 
 	def encrypt_CFB_OFB(self, nround=16, mode='cfb'):
-		iv = self.iv
+		if(mode == 'ctr'):
+			counter = 0
+			iv = bin(counter)[2:].zfill(128)
+		else :
+			iv = self.iv
+
 		ciphertext = ""
         
 		for message in self.plaintext:
@@ -169,6 +174,9 @@ class RF1(object):
 				iv = temp
 			elif(mode == 'ofb'):
 				iv = combined
+			elif(mode == 'ctr'):
+				counter += 1
+				iv = bin(counter)[2:].zfill(128)
 
 			for i in range(0,len(iv),8):
 				ciphertext += chr(int(temp[i:i+8], 2))
@@ -176,7 +184,12 @@ class RF1(object):
 		return ciphertext
     
 	def decrypt_CFB_OFB(self, ciphertext, nround=16, mode='cfb'):
-		iv = self.iv
+		if(mode == 'ctr'):
+			counter = 0
+			iv = bin(counter)[2:].zfill(128)
+		else :
+			iv = self.iv
+
 		plaintext = ""
         
 		# convert ciphertext to binary form
@@ -205,6 +218,9 @@ class RF1(object):
 				iv = message
 			elif(mode == 'ofb'):
 				iv = combined
+			elif(mode == 'ctr'):
+				counter += 1
+				iv = bin(counter)[2:].zfill(128)
 
 			temp_plain = ''.join(str(int(i) ^ int(j)) for i, j in zip(message, combined))
 
@@ -223,6 +239,8 @@ class RF1(object):
 			return self.encrypt_CFB_OFB(nround=nround)
 		elif(mode == 'ofb'):
 			return self.encrypt_CFB_OFB(nround=nround, mode='ofb')
+		elif(mode == 'ctr'):
+			return self.encrypt_CFB_OFB(nround=nround, mode='ctr')
 
 	# wrapper function for decryption
 	def decrypt(self, ciphertext, nround=16, mode='ecb'):
@@ -234,10 +252,12 @@ class RF1(object):
 			return self.decrypt_CFB_OFB(ciphertext=ciphertext, nround=nround)
 		elif(mode == 'ofb'):
 			return self.decrypt_CFB_OFB(ciphertext=ciphertext, nround=nround, mode='ofb')
+		elif(mode == 'ctr'):
+			return self.decrypt_CFB_OFB(ciphertext=ciphertext, nround=nround, mode='ctr')
 
 if __name__ == "__main__":
 	cipher = RF1("key.txt", "input.txt", "iv.txt")
-	encrypted = cipher.encrypt(mode='ofb')
+	encrypted = cipher.encrypt(mode='ctr')
 	print("Encrypt = ", encrypted)
-	decrypted = cipher.decrypt(encrypted, mode='ofb')
+	decrypted = cipher.decrypt(encrypted, mode='ctr')
 	print("Decrypt = ",decrypted)
