@@ -65,7 +65,7 @@ class RF1(object):
 	# ecb is the default for the encryption
 	def encrypt_ecb_cbc(self, nround=16, mode='ecb'):
 		if(mode == 'cbc'):
-			previous_encrypted_message = ""
+			previous_encrypted_message = self.iv
 
 		ciphertext = ""
 
@@ -103,6 +103,7 @@ class RF1(object):
 	def decrypt_ecb_cbc(self, ciphertext, nround=16, mode='ecb'):
 		if(mode == 'cbc'):
 			previous_encrypted_message = []
+			previous_encrypted_message.append(self.iv)
 
 		plaintext = ""
 
@@ -134,8 +135,7 @@ class RF1(object):
 
 			# if the mode is cbc, we must convert the plaintext to the actual plaintext
 			if(mode == 'cbc'):
-				if index > 0:
-					combined = ''.join(str(int(i) ^ int(j)) for i,j in zip(combined, previous_encrypted_message[-2]))
+				combined = ''.join(str(int(i) ^ int(j)) for i,j in zip(combined, previous_encrypted_message[-2]))
 
 			for i in range(0,len(combined),8):
 				plaintext += chr(int(combined[i:i+8], 2))
