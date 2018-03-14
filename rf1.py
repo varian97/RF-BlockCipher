@@ -142,7 +142,7 @@ class RF1(object):
 
 		return plaintext		
 
-	def encrypt_CFB(self, nround=16):
+	def encrypt_CFB_OFB(self, nround=16, mode='cfb'):
 		iv = self.iv
 		ciphertext = ""
         
@@ -163,14 +163,19 @@ class RF1(object):
 			combined = np.append(iv_L.reshape((64,)), iv_R.reshape((64,)))
 			combined = ''.join(str(x) for x in combined)
 
-			iv = ''.join(str(int(i) ^ int(j)) for i, j in zip(message, combined))
+			temp = ''.join(str(int(i) ^ int(j)) for i, j in zip(message, combined))
+
+			if(mode == 'cfb'):
+				iv = temp
+			elif(mode == 'ofb'):
+				iv = combined
 
 			for i in range(0,len(iv),8):
-				ciphertext += chr(int(iv[i:i+8], 2))
+				ciphertext += chr(int(temp[i:i+8], 2))
                 
 		return ciphertext
     
-	def decrypt_CFB(self, ciphertext, nround=16):
+	def decrypt_CFB_OFB(self, ciphertext, nround=16, mode='cfb'):
 		iv = self.iv
 		plaintext = ""
         
@@ -195,14 +200,17 @@ class RF1(object):
 			# combine the message again
 			combined = np.append(iv_L.reshape((64,)), iv_R.reshape((64,)))
 			combined = ''.join(str(x) for x in combined)
-            
-			iv = message
-            
+
+			if(mode == 'cfb'):
+				iv = message
+			elif(mode == 'ofb'):
+				iv = combined
+
 			temp_plain = ''.join(str(int(i) ^ int(j)) for i, j in zip(message, combined))
-            
+
 			for i in range(0,len(temp_plain),8):
 				plaintext += chr(int(temp_plain[i:i+8], 2))
-                
+
 		return plaintext
 
 	# wrapper function for encryption
@@ -212,7 +220,9 @@ class RF1(object):
 		elif(mode == 'cbc'):
 			return self.encrypt_ecb_cbc(nround=nround, mode='cbc')
 		elif(mode == 'cfb'):
-			return self.encrypt_CFB(nround=nround)
+			return self.encrypt_CFB_OFB(nround=nround)
+		elif(mode == 'ofb'):
+			return self.encrypt_CFB_OFB(nround=nround, mode='ofb')
 
 	# wrapper function for decryption
 	def decrypt(self, ciphertext, nround=16, mode='ecb'):
@@ -221,11 +231,13 @@ class RF1(object):
 		elif(mode == 'cbc'):
 			return self.decrypt_ecb_cbc(ciphertext=ciphertext, nround=nround, mode='cbc')
 		elif(mode == 'cfb'):
-			return self.decrypt_CFB(ciphertext=ciphertext, nround=nround)
+			return self.decrypt_CFB_OFB(ciphertext=ciphertext, nround=nround)
+		elif(mode == 'ofb'):
+			return self.decrypt_CFB_OFB(ciphertext=ciphertext, nround=nround, mode='ofb')
 
 if __name__ == "__main__":
 	cipher = RF1("key.txt", "input.txt", "iv.txt")
-	encrypted = cipher.encrypt(mode='cfb')
+	encrypted = cipher.encrypt(mode='ofb')
 	print("Encrypt = ", encrypted)
-	decrypted = cipher.decrypt(encrypted, mode='cfb')
+	decrypted = cipher.decrypt(encrypted, mode='ofb')
 	print("Decrypt = ",decrypted)
