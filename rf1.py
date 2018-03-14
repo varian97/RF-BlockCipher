@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import helper
 
@@ -256,8 +257,38 @@ class RF1(object):
 			return self.decrypt_CFB_OFB(ciphertext=ciphertext, nround=nround, mode='ctr')
 
 if __name__ == "__main__":
+	# plotting stuff
+	plaintext_x = [x for x in range(256)]
+	plaintext_y = [0 for x in range(256)]
+
+	ciphertext_x = [x for x in range(256)]
+	ciphertext_y = [0 for x in range(256)]
+
+	mode = 'ecb'
 	cipher = RF1("key.txt", "input.txt", "iv.txt")
-	encrypted = cipher.encrypt(mode='ctr')
+	encrypted = cipher.encrypt(mode=mode)
 	print("Encrypt = ", encrypted)
-	decrypted = cipher.decrypt(encrypted, mode='ctr')
+
+	# save to file as binary
+	with open("out.txt", 'wb') as fout:
+		fout.write(encrypted.encode())
+
+	decrypted = cipher.decrypt(encrypted, mode=mode)
 	print("Decrypt = ",decrypted)
+
+	# draw the graph
+	fin = open('input.txt', 'r').read()
+
+	for i in range(len(fin)):
+		plaintext_y[ord(fin[i])]+=1
+
+	for i in range(len(encrypted)):
+		ciphertext_y[ord(encrypted[i])] += 1
+
+	plt.plot(plaintext_x, plaintext_y, color='red', label='plaintext', linewidth=2.0)
+	plt.plot(ciphertext_x, ciphertext_y, color='blue', label='ciphertext', linewidth=2.0)
+	plt.xlabel('byte')
+	plt.ylabel('frekuensi')
+	plt.title("Mode " + mode.upper())
+	plt.legend(('plaintext', 'ciphertext'), loc=1, borderaxespad=0.)
+	plt.show()
