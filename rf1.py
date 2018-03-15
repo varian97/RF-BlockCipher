@@ -270,8 +270,9 @@ if __name__ == "__main__":
 	print("Encrypt = ", encrypted)
 
 	# save to file as binary
-	with open("out.txt", 'wb') as fout:
-		fout.write(encrypted.encode())
+	with open("out.txt", 'w') as fout:
+		temp = " ".join(hex(int(bin(ord(encrypted[x]))[2:].zfill(8)[:4], 2))[2:] + hex(int(bin(ord(encrypted[x]))[2:].zfill(8)[4:], 2))[2:] for x in range(len(encrypted))) 
+		fout.write(temp.upper())
 
 	decrypted = cipher.decrypt(encrypted, mode=mode)
 	print("Decrypt = ",decrypted)
